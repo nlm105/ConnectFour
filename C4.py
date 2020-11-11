@@ -2,6 +2,18 @@ import random
 import numpy as np
 import copy
 import json
+import pickle
+
+##########################################
+# Naming New JSON
+#   to save more than one JSON file, we count how many already exist and use that number to name new ones
+##########################################
+from os import getcwd
+from os import listdir
+
+# mypath = getcwd()
+# cwd = [f for f in listdir(mypath) if f.endswith('.json')]
+# JSON_COUNT = len(cwd)/2
 
 
 ##########################################
@@ -172,7 +184,7 @@ class ConnectFour:
         Oposn = 0
         bestOvalue = 1000
 
-        decvalues = np.array(9)  # in order to choose a random move
+        decvalues = np.empty((9), dtype=int)  # in order to choose a random move-
 
         # Filling with -1000
         for i in range(0, 9):
@@ -427,10 +439,9 @@ class ConnectFour:
     # Computer makes move
     # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     def Omove(self):
-        # self.Grid.makeMove('O', self.bestMoveO(self.diffO))
-        print("Please enter your move: ")
-        self.Grid.makeMove('O', int(input()))
-    # Omove
+        self.Grid.makeMove('O', self.bestMoveO(self.diffO))
+        # print("Please enter your move: ")
+        # self.Grid.makeMove('O', int(input()))
 
 
 ###########################################
@@ -440,8 +451,8 @@ class ConnectFour:
 # Note:  X always moves first
 
 # set the lookahead in the range 0..7
-difficultyX = random.randint(0, 7)
-difficultyO = random.randint(0, 7)
+difficultyX = 4#random.randint(0, 6)
+difficultyO = 5#random.randint(0, 6)
 
 # create a ConnectFour game
 game = ConnectFour(difficultyX, difficultyO)
@@ -449,13 +460,15 @@ game = ConnectFour(difficultyX, difficultyO)
 outputX = []
 outputO = []
 
-winner = ""
-
 def changeLoser(arr):
     for i in arr:
         i[1] = i[1]*-1
 
+def setTurns(arr, totalTurns):
+    for i in arr:
+        i[1] = totalTurns - i[1] + 1 # add one because w/out winning turn is 0 and want it to be one
 
+winner = ""
 # While game is not finished, loop continuously
 while (game.Grid.movecounter < 64 and game.judge(game.Grid) == 0):
 
@@ -474,11 +487,13 @@ while (game.Grid.movecounter < 64 and game.judge(game.Grid) == 0):
     if (result == -10):
         print("O wins")
         winner = "O"
+        # changeLoser(outputX)
     elif (result == 0):
         print("Draw")
     elif (result == 10):
         print("X wins")
-        winner = "X"
+        winnere = "X"
+        # changeLoser(outputO)
     else:
         print("Unreachable State - Error")
 
@@ -487,18 +502,44 @@ while (game.Grid.movecounter < 64 and game.judge(game.Grid) == 0):
 
 
 totalTurns = game.Grid.movecounter
-print(totalTurns)
+
+setTurns(outputO, totalTurns)
+setTurns(outputX, totalTurns)
 
 if winner == "O":
     changeLoser(outputX)
 elif winner == "X":
     changeLoser(outputO)
 
-
 print(outputX)
 print(outputO)
-with open('X.json', 'w') as outfile:
-    json.dump(outputX, outfile)
 
-with open('O.json', 'w') as outfile:
-    json.dump(outputO, outfile)
+# maybe remove indent? Tried to make output look nicer but don't like this output either
+# with open('X.json', 'w') as outfile:
+#     temp = json.load(outfile)
+#     print("X:", temp)
+#     json.dump(outputX, outfile, indent=1)
+#
+# with open('O.json', 'w') as outfile:
+#     temp = json.load(outfile)
+#     print("O:", temp)
+#     json.dump(outputO, outfile, indent=1)
+
+
+with open('X.pkl', 'r+b') as f:
+    temp = pickle.load(f)
+    print("X:", temp)
+    print(len(temp))
+    temp = temp + outputX
+    print(len(temp))
+    f.seek(0)
+    f.truncate()
+    pickle.dump(temp, f)
+
+with open('O.pkl', 'r+b') as f:
+    temp = pickle.load(f)
+    print("O:", temp)
+    temp = temp + outputO
+    f.seek(0)
+    f.truncate()
+    pickle.dump(temp, f)
