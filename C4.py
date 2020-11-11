@@ -3,6 +3,7 @@ import numpy as np
 import copy
 import json
 import pickle
+import outputFormat as OF
 
 ##########################################
 # Naming New JSON
@@ -460,13 +461,13 @@ game = ConnectFour(difficultyX, difficultyO)
 outputX = []
 outputO = []
 
-def changeLoser(arr):
-    for i in arr:
-        i[1] = i[1]*-1
-
-def setTurns(arr, totalTurns):
-    for i in arr:
-        i[1] = totalTurns - i[1] + 1 # add one because w/out winning turn is 0 and want it to be one
+# def changeLoser(arr):
+#     for i in arr:
+#         i[1] = i[1]*-1
+#
+# def setTurns(arr, totalTurns):
+#     for i in arr:
+#         i[1] = totalTurns - i[1] + 1 # add one because w/out winning turn is 0 and want it to be one
 
 winner = ""
 # While game is not finished, loop continuously
@@ -503,13 +504,13 @@ while (game.Grid.movecounter < 64 and game.judge(game.Grid) == 0):
 
 totalTurns = game.Grid.movecounter
 
-setTurns(outputO, totalTurns)
-setTurns(outputX, totalTurns)
+outputO = OF.setTurns(outputO, totalTurns)
+outputX = OF.setTurns(outputX, totalTurns)
 
 if winner == "O":
-    changeLoser(outputX)
+    outputX= OF.changeLoser(outputX)
 elif winner == "X":
-    changeLoser(outputO)
+    outputO = OF.changeLoser(outputO)
 
 print(outputX)
 print(outputO)
@@ -525,20 +526,20 @@ print(outputO)
 #     print("O:", temp)
 #     json.dump(outputO, outfile, indent=1)
 
-
+'''
+Switched to Pickle to accommodate for lists in IO
+JSON was not working as when you try to load from a JSON it wasn't giving a list
+Pickle is much better suited for this and works quite well
+'''
 with open('X.pkl', 'r+b') as f:
     temp = pickle.load(f)
-    print("X:", temp)
-    print(len(temp))
     temp = temp + outputX
-    print(len(temp))
     f.seek(0)
     f.truncate()
     pickle.dump(temp, f)
 
 with open('O.pkl', 'r+b') as f:
     temp = pickle.load(f)
-    print("O:", temp)
     temp = temp + outputO
     f.seek(0)
     f.truncate()
