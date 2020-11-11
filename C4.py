@@ -3,6 +3,17 @@ import numpy as np
 import copy
 import json
 
+##########################################
+# Naming New JSON
+#   to save more than one JSON file, we count how many already exist and use that number to name new ones
+##########################################
+from os import getcwd
+from os import listdir
+
+mypath = getcwd()
+cwd = [f for f in listdir(mypath) if f.endswith('.json')]
+JSON_COUNT = len(cwd)/2
+
 
 ##########################################
 # Board class
@@ -172,7 +183,7 @@ class ConnectFour:
         Oposn = 0
         bestOvalue = 1000
 
-        decvalues = np.array(9)  # in order to choose a random move
+        decvalues = np.empty((9), dtype=int)  # in order to choose a random move-
 
         # Filling with -1000
         for i in range(0, 9):
@@ -427,10 +438,9 @@ class ConnectFour:
     # Computer makes move
     # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     def Omove(self):
-        # self.Grid.makeMove('O', self.bestMoveO(self.diffO))
-        print("Please enter your move: ")
-        self.Grid.makeMove('O', int(input()))
-    # Omove
+        self.Grid.makeMove('O', self.bestMoveO(self.diffO))
+        # print("Please enter your move: ")
+        # self.Grid.makeMove('O', int(input()))
 
 
 ###########################################
@@ -440,8 +450,8 @@ class ConnectFour:
 # Note:  X always moves first
 
 # set the lookahead in the range 0..7
-difficultyX = random.randint(0, 7)
-difficultyO = random.randint(0, 7)
+difficultyX = 4#random.randint(0, 6)
+difficultyO = 5#random.randint(0, 6)
 
 # create a ConnectFour game
 game = ConnectFour(difficultyX, difficultyO)
@@ -488,8 +498,8 @@ print(outputX)
 print(outputO)
 
 
-with open('X.json', 'w') as outfile:
+with open('X' + str(JSON_COUNT) + '.json', 'w') as outfile:
     json.dump(outputX, outfile)
 
-with open('O.json', 'w') as outfile:
+with open('O' + str(JSON_COUNT) + '.json', 'w') as outfile:
     json.dump(outputO, outfile)
