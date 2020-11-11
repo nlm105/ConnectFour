@@ -449,6 +449,8 @@ game = ConnectFour(difficultyX, difficultyO)
 outputX = []
 outputO = []
 
+winner = ""
+
 def changeLoser(arr):
     for i in arr:
         i[1] = i[1]*-1
@@ -471,12 +473,12 @@ while (game.Grid.movecounter < 64 and game.judge(game.Grid) == 0):
 
     if (result == -10):
         print("O wins")
-        changeLoser(outputX)
+        winner = "O"
     elif (result == 0):
         print("Draw")
     elif (result == 10):
         print("X wins")
-        changeLoser(outputO)
+        winner = "X"
     else:
         print("Unreachable State - Error")
 
@@ -484,10 +486,17 @@ while (game.Grid.movecounter < 64 and game.judge(game.Grid) == 0):
     print("Lookahead: O=", difficultyO)
 
 
+totalTurns = game.Grid.movecounter
+print(totalTurns)
+
+if winner == "O":
+    changeLoser(outputX)
+elif winner == "X":
+    changeLoser(outputO)
+
+
 print(outputX)
 print(outputO)
-
-
 with open('X.json', 'w') as outfile:
     json.dump(outputX, outfile)
 
