@@ -27,5 +27,18 @@ labels = np.array([i[1] for i in data])
 
 X_train, X_test, y_train, y_test = train_test_split(boards, labels, test_size=0.33, random_state=42)
 
-print(np.shape(data))
-print((X_train, "\n", X_test))
+# print(np.shape(data))
+# print((X_train, "\n", X_test))
+
+network = models.Sequential()
+
+network.add(layers.Dense(512, activation="relu"))
+network.add(layers.Dense(1))
+
+network.compile(loss="mse", metrics="mse")
+network.fit(X_train, y_train, epochs=5, batch_size=5)
+
+# predicts = network.predict()
+
+network.evaluate(X_train, y_train)
+network.evaluate(X_test, y_test)
