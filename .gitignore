@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 Main2.py
+backupData/*
 
 # C extensions
 *.so

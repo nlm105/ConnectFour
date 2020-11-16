@@ -2,6 +2,7 @@ import random
 import numpy as np
 import copy
 import pickle
+import os
 import outputFormat as OF
 
 
@@ -460,10 +461,10 @@ while (game.Grid.movecounter < 64 and game.judge(game.Grid) == 0):
     # True for X move, false for O move
     if (game.whoseMove()):
         game.Xmove()
-        outputX.append([game.Grid.gameboard.tolist(), game.Grid.movecounter])
+        outputX.append([OF.strToNum(game.Grid.gameboard.tolist()), game.Grid.movecounter])
     else:
         game.Omove()
-        outputO.append([game.Grid.gameboard.tolist(), game.Grid.movecounter])
+        outputO.append([OF.strToNum(game.Grid.gameboard.tolist()), game.Grid.movecounter])
 
     # Find winner and print result.
     # 10 = X win, 0 = draw, -10 = O win
@@ -502,16 +503,30 @@ Switched to Pickle to accommodate for lists in IO
 JSON was not working as when you try to load from a JSON it wasn't giving a list
 Pickle is much better suited for this and works quite well
 '''
-with open('X.pkl', 'r+b') as f:
-    temp = pickle.load(f)
-    temp = temp + outputX
-    f.seek(0)
-    f.truncate()
-    pickle.dump(temp, f)
 
-with open('O.pkl', 'r+b') as f:
-    temp = pickle.load(f)
-    temp = temp + outputO
-    f.seek(0)
-    f.truncate()
-    pickle.dump(temp, f)
+if not os.path.exists("X.pkl"):
+    with open("X.pkl", "wb") as f:
+        pickle.dump(outputX, f)
+        f.close()
+else:
+    with open('X.pkl', 'r+b') as f:
+        temp = pickle.load(f)
+        temp = temp + outputX
+        f.seek(0)
+        f.truncate()
+        pickle.dump(temp, f)
+        f.close()
+
+
+if not os.path.exists("O.pkl"):
+    with open("O.pkl", "wb") as f:
+        pickle.dump(outputO, f)
+        f.close()
+else:
+    with open('O.pkl', 'r+b') as f:
+        temp = pickle.load(f)
+        temp = temp + outputO
+        f.seek(0)
+        f.truncate()
+        pickle.dump(temp, f)
+        f.close()
