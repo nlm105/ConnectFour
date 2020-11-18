@@ -15,11 +15,9 @@ def outputArr():
 
 
 def strToNum(arr):
-    temp = arr.copy()
+    temp = [i for i in arr if i != "e"]
     for i in range(len(temp)):
-        if temp[i] == "e":
-            temp[i] = -1000
-        elif temp[i] == "X":
+        if temp[i] == "X":
             temp[i] = 1
         elif temp[i] == "O":
             temp[i] = -1

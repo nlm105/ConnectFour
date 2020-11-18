@@ -32,6 +32,8 @@ labels = np.array([i[1] for i in data])
 
 X_train, X_test, y_train, y_test = train_test_split(boards, labels, test_size=0.33, random_state=42)
 
+X_test = X_test/10
+y_test = y_test/10
 # print(np.shape(data))
 # print((X_train, "\n", X_test))
 
@@ -53,7 +55,7 @@ network.evaluate(X_test, y_test)
 print(X_train[0])
 print(type(X_train[0]))
 
-for i in range(100):
+for i in range(len(X_train)):
     predict = network.predict(np.array([X_train[i]]))
     print(predict, ":", y_train[i])
 
