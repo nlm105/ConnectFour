@@ -443,90 +443,90 @@ class ConnectFour:
 # set the lookahead in the range 0..6
 # difficultyX = random.randint(0, 6)
 # difficultyO = random.randint(0, 6)
+for _ in range(100):
+    difficultyO = 4
+    difficultyX = 5
 
-difficultyX = 5
-difficultyO = 4
+    # create a ConnectFour game
+    game = ConnectFour(difficultyX, difficultyO)
 
-# create a ConnectFour game
-game = ConnectFour(difficultyX, difficultyO)
+    outputX = []
+    outputO = []
 
-outputX = []
-outputO = []
+    winner = ""
 
-winner = ""
+    # While game is not finished, loop continuously
+    while (game.Grid.movecounter < 64 and game.judge(game.Grid) == 0):
 
-# While game is not finished, loop continuously
-while (game.Grid.movecounter < 64 and game.judge(game.Grid) == 0):
+        # True for X move, false for O move
+        if (game.whoseMove()):
+            game.Xmove()
+            outputX.append([OF.strToNum(game.Grid.gameboard.tolist()), game.Grid.movecounter])
+        else:
+            game.Omove()
+            outputO.append([OF.strToNum(game.Grid.gameboard.tolist()), game.Grid.movecounter])
 
-    # True for X move, false for O move
-    if (game.whoseMove()):
-        game.Xmove()
-        outputX.append([OF.strToNum(game.Grid.gameboard.tolist()), game.Grid.movecounter])
+        # Find winner and print result.
+        # 10 = X win, 0 = draw, -10 = O win
+        result = game.judge(game.Grid)
+        # game.Grid.draw()
+
+    if (result == -10):
+        print("O wins")
+        winner = "O"
+    elif (result == 0):
+        print("Draw")
+    elif (result == 10):
+        print("X wins")
+        winner = "X"
     else:
-        game.Omove()
-        outputO.append([OF.strToNum(game.Grid.gameboard.tolist()), game.Grid.movecounter])
+        print("Unreachable State - Error")
 
-    # Find winner and print result.
-    # 10 = X win, 0 = draw, -10 = O win
-    result = game.judge(game.Grid)
-    game.Grid.draw()
+    print("Lookahead: X=", difficultyX)
+    print("Lookahead: O=", difficultyO)
 
-if (result == -10):
-    print("O wins")
-    winner = "O"
-elif (result == 0):
-    print("Draw")
-elif (result == 10):
-    print("X wins")
-    winner = "X"
-else:
-    print("Unreachable State - Error")
+    totalTurns = game.Grid.movecounter
 
-print("Lookahead: X=", difficultyX)
-print("Lookahead: O=", difficultyO)
+    outputO = OF.setTurns(outputO, totalTurns)
+    outputX = OF.setTurns(outputX, totalTurns)
 
-totalTurns = game.Grid.movecounter
+    if winner == "O":
+        outputX = OF.changeLoser(outputX)
+    elif winner == "X":
+        outputO = OF.changeLoser(outputO)
 
-outputO = OF.setTurns(outputO, totalTurns)
-outputX = OF.setTurns(outputX, totalTurns)
+    # print(outputX)
+    # print(outputO)
 
-if winner == "O":
-    outputX = OF.changeLoser(outputX)
-elif winner == "X":
-    outputO = OF.changeLoser(outputO)
+    '''
+    Switched to Pickle to accommodate for lists in IO
+    JSON was not working as when you try to load from a JSON it wasn't giving a list
+    Pickle is much better suited for this and works quite well
+    '''
 
-print(outputX)
-print(outputO)
-
-'''
-Switched to Pickle to accommodate for lists in IO
-JSON was not working as when you try to load from a JSON it wasn't giving a list
-Pickle is much better suited for this and works quite well
-'''
-
-if not os.path.exists("X.pkl"):
-    with open("X.pkl", "wb") as f:
-        pickle.dump(outputX, f)
-        f.close()
-else:
-    with open('X.pkl', 'r+b') as f:
-        temp = pickle.load(f)
-        temp = temp + outputX
-        f.seek(0)
-        f.truncate()
-        pickle.dump(temp, f)
-        f.close()
+    if not os.path.exists("X.pkl"):
+        with open("X.pkl", "wb") as f:
+            pickle.dump(outputX, f)
+            f.close()
+    else:
+        with open('X.pkl', 'r+b') as f:
+            temp = pickle.load(f)
+            temp = temp + outputX
+            f.seek(0)
+            f.truncate()
+            pickle.dump(temp, f)
+            f.close()
 
 
-if not os.path.exists("O.pkl"):
-    with open("O.pkl", "wb") as f:
-        pickle.dump(outputO, f)
-        f.close()
-else:
-    with open('O.pkl', 'r+b') as f:
-        temp = pickle.load(f)
-        temp = temp + outputO
-        f.seek(0)
-        f.truncate()
-        pickle.dump(temp, f)
-        f.close()
+    if not os.path.exists("O.pkl"):
+        with open("O.pkl", "wb") as f:
+            pickle.dump(outputO, f)
+            f.close()
+    else:
+        with open('O.pkl', 'r+b') as f:
+            temp = pickle.load(f)
+            temp = temp + outputO
+            f.seek(0)
+            f.truncate()
+            pickle.dump(temp, f)
+            f.close()
