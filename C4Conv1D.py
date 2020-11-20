@@ -39,10 +39,20 @@ for i in boards:
 
 labels = np.array([i[1] for i in data])
 
+lbls = []
+for i in range(len(labels)):
+    temp = [[labels[i]]]
+    lbls.append(temp)
+
+#to try using the triple array version of y change labels to lbls \/
+
 X_train, X_test, y_train, y_test = train_test_split(bds, labels, test_size=0.33, random_state=42)
 
-y_test = y_test/10
-y_train = y_train/10
+
+
+# y_test = y_test/10
+# y_train = y_train/10
+
 # print(np.shape(data))
 # print((X_train, "\n", X_test))
 
