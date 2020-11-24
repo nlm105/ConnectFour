@@ -44,9 +44,12 @@ for i in range(len(labels)):
     temp = [[labels[i]]]
     lbls.append(temp)
 
-#to try using the triple array version of y change labels to lbls \/
+X_train, X_test, y_train, y_test = train_test_split(bds, lbls, test_size=0.33, random_state=42)
 
-X_train, X_test, y_train, y_test = train_test_split(bds, labels, test_size=0.33, random_state=42)
+X_train = np.array(X_train)
+X_test = np.array(X_test)
+y_train = np.array(y_train)
+y_test = np.array(y_test)
 
 
 
@@ -56,22 +59,39 @@ X_train, X_test, y_train, y_test = train_test_split(bds, labels, test_size=0.33,
 # print(np.shape(data))
 # print((X_train, "\n", X_test))
 
+opt = keras.optimizers.Adam(learning_rate = 0.01)
 network = models.Sequential()
 
-network.add(layers.Conv1D(16, 1, activation='relu'))
-network.add(layers.Conv1D(32, 1, activation='relu'))
-network.add(layers.Conv1D(32, 3, activation='relu'))
-network.add(layers.Conv1D(64, 3, activation='relu'))
-network.add(layers.Conv1D(128, 3, activation='relu'))
-# network.add(layers.Dense(64, activation='relu'))
-network.add(layers.Dense(1, activation='sigmoid'))
+# network.add(layers.Conv1D(16, 1, activation='relu'))
+# network.add(layers.Conv1D(32, 1, activation='relu'))
+# network.add(layers.Conv1D(32, 3, activation='relu'))
+# network.add(layers.Conv1D(64, 3, activation='relu'))
+# network.add(layers.Conv1D(128, 3, activation='relu'))
+# # network.add(layers.Dense(64, activation='relu'))
+# network.add(layers.Dense(1, activation='sigmoid'))
+#
+# network.compile(loss="mse", metrics="mse")
 
-network.compile(loss="mse", metrics="mse")
+network.add(layers.Conv2D(8, (4, 4), activation='relu', input_shape=(8,8,1)))
+#network.add(layers.MaxPooling2D(4,4))
+network.add(layers.Conv2D(16, (2, 2), activation='relu'))
+#network.add(layers.MaxPooling2D(2,2))
+network.add(layers.Conv2D(16, (2, 2), activation='relu'))
+network.add(layers.Flatten())
+network.add(layers.Dense(16))
+network.add(layers.Dense(1))
 
-train_data = tf.data.Dataset.from_tensor_slices((X_train, y_train))
-valid_data = tf.data.Dataset.from_tensor_slices((X_test, y_test))
 
-network.fit(X_train, y_train, epochs=5, batch_size=15)
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# create a model using the training data
+# note the reshaping line (11) - modify if you change the amount of training
+#   observations
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+network.compile(optimizer=opt, loss='mse', metrics='mse')
+X_train = X_train.reshape((int(X_train.size/64), 8, 8, 1))
+network.fit(X_train, y_train, epochs=5, batch_size=1, verbose=0)
+X_test = X_test.reshape((int(X_test.size/64)), 8, 8, 1)
+
 network.summary()
 
 # predicts = network.predict()

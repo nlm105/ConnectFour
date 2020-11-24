@@ -19,10 +19,10 @@ with open("X.pkl", "rb") as f:
     data = p.load(f)
     f.close()
 
-with open("O.pkl", "rb") as f:
-    temp = p.load(f)
-    data = data + temp
-    f.close()
+# with open("O.pkl", "rb") as f:
+#     temp = p.load(f)
+#     data = data + temp
+#     f.close()
 
 # Holy shit this all worked
 boards = [arr[0] for arr in data]
