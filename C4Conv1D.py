@@ -19,10 +19,10 @@ with open("X.pkl", "rb") as f:
     data = p.load(f)
     f.close()
 
-with open("O.pkl", "rb") as f:
-    temp = p.load(f)
-    data = data + temp
-    f.close()
+# with open("O.pkl", "rb") as f:
+#     temp = p.load(f)
+#     data = data + temp
+#     f.close()
 
 # Holy shit this all worked
 boards = [arr[0] for arr in data]
@@ -51,10 +51,8 @@ X_test = np.array(X_test)
 y_train = np.array(y_train)
 y_test = np.array(y_test)
 
-
-
-# y_test = y_test/10
-# y_train = y_train/10
+y_test = y_test/10
+y_train = y_train/10
 
 # print(np.shape(data))
 # print((X_train, "\n", X_test))
@@ -99,11 +97,11 @@ network.summary()
 network.evaluate(X_train, y_train)
 network.evaluate(X_test, y_test)
 
-print(X_train[0])
-print(type(X_train[0]))
+# print(X_train[0])
+# print(type(X_train[0]))
 
 for i in range(len(X_train)):
     predict = network.predict(np.array([X_train[i]]))
     print(predict, ":", y_train[i])
 
-print(network.predict(np.array([X_train[0]])))
+# print(network.predict(np.array([X_train[0]])))
