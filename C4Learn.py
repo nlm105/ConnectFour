@@ -47,6 +47,8 @@ network.compile(loss="mse", metrics="mse")
 network.fit(X_train, y_train, epochs=5, batch_size=15)
 network.summary()
 
+
+
 # predicts = network.predict()
 
 network.evaluate(X_train, y_train)

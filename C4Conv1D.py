@@ -87,10 +87,18 @@ network.add(layers.Dense(1))
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 network.compile(optimizer=opt, loss='mse', metrics='mse')
 X_train = X_train.reshape((int(X_train.size/64), 8, 8, 1))
-network.fit(X_train, y_train, epochs=5, batch_size=1, verbose=0)
+network.fit(X_train, y_train, epochs=5, batch_size=1, verbose=1)
 X_test = X_test.reshape((int(X_test.size/64)), 8, 8, 1)
 
 network.summary()
+
+# serialize model to JSON
+model_json = network.to_json()
+with open("model.json", "w") as json_file:
+    json_file.write(model_json)
+# serialize weights to HDF5
+network.save_weights("model.h5")
+print("Saved model to disk")
 
 # predicts = network.predict()
 
