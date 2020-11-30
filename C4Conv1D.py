@@ -93,11 +93,12 @@ X_test = X_test.reshape((int(X_test.size/64)), 8, 8, 1)
 network.summary()
 
 # serialize model to JSON
-model_json = network.to_json()
-with open("model.json", "w") as json_file:
-    json_file.write(model_json)
+# model_json = network.to_json()
+# with open("model.h5", "w") as json_file:
+#     network.save(json_file)
+network.save('model.h5')
 # serialize weights to HDF5
-network.save_weights("model.h5")
+# network.save_weights("model.h5")
 print("Saved model to disk")
 
 # predicts = network.predict()

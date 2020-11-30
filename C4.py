@@ -1,18 +1,29 @@
+import logging
+import os
+
+# | 0 DEBUG | 1 INFO | 2 WARNING | 3 ERROR |
+# This is what it will stop. So 3 will stop all messages
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # FATAL
+logging.getLogger('tensorflow').setLevel(logging.WARNING)  # sets log for other tensorflow things outside std out
+
 import random
 import numpy as np
 import copy
 import pickle
-import os
 import outputFormat as OF
+import tensorflow as tf
 from keras.models import model_from_json
 
 # load json and create model
-json_file = open('model.json', 'r')
-loaded_model_json = json_file.read()
-json_file.close()
-loaded_model = model_from_json(loaded_model_json)
-# load weights into new model
-loaded_model.load_weights("model.h5")
+# json_file = open('model.json', 'r')
+# loaded_model_json = json_file.read()
+# json_file.close()
+# loaded_model = model_from_json(loaded_model_json)
+# # load weights into new model
+# loaded_model.load_weights("model.h5")
+# loaded_model.compile()
+model = tf.keras.models.load_model('model.h5')
+print(model.summary())
 print("Loaded model from disk")
 
 
@@ -438,10 +449,31 @@ class ConnectFour:
     # Computer makes move
     # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     def Omove(self):
-        self.Grid.makeMove('O', self.bestMoveO(self.diffO))
+        # self.Grid.makeMove('O', self.bestMoveO(self.diffO))
         # print("Please enter your move: ")
         # self.Grid.makeMove('O', int(input()))
+        move = self.modelMove()
+        self.Grid.makeMove('O', move)
+
     # Omove
+
+    def modelMove(self):
+        best = []
+        # copyGame = copy.deepcopy(self)
+        row = 0
+        for i in range(1, 9):
+            copyGame = copy.deepcopy(self)
+            copyGame.Grid.update('O', i)
+            board = OF.strToNum(copyGame.Grid.gameboard.tolist())
+            board = np.array([np.array(board)])
+            temp = [[] for _ in range(8)]
+            for j in range(len(temp)):
+                temp[j] = board[(j * 8):(j * 8 + 8)]
+            board = np.array(temp)
+            board = board.reshape((8, 8, 1))
+            best.append(model.predict(board))
+
+        return np.argmax(best)
 
 
 ###########################################
@@ -526,7 +558,6 @@ for _ in range(100):
             f.truncate()
             pickle.dump(temp, f)
             f.close()
-
 
     if not os.path.exists("O.pkl"):
         with open("O.pkl", "wb") as f:
