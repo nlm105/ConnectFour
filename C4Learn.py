@@ -54,11 +54,16 @@ network.summary()
 network.evaluate(X_train, y_train)
 network.evaluate(X_test, y_test)
 
-print(X_train[0])
-print(type(X_train[0]))
+network.save('model.h5')
+print("Saved model to disk")
 
-for i in range(len(X_train)):
-    predict = network.predict(np.array([X_train[i]]))
-    print(predict, ":", y_train[i])
-
-print(network.predict(np.array([X_train[0]])))
+# print(X_train[0])
+# print(type(X_train[0]))
+#
+# for i in range(len(X_train)):
+#     predict = network.predict(np.array([X_train[i]]))
+#     print(predict, ":", y_train[i])
+#
+dumb = X_train[0]
+num = network.predict(dumb)
+print()

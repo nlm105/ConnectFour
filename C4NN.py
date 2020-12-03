@@ -195,15 +195,15 @@ class ConnectFour:
     # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     # returns the best move that O can make
     # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    def bestMoveO(self, lookahead):
+    def bestMoveO(self):
         Oposn = 0
         bestOvalue = 1000
 
-        decvalues = np.empty((9), dtype=int)  # in order to choose a random move
+        decvalues = np.empty((9), dtype=float)  # in order to choose a random move
 
         # Filling with -1000
         for i in range(0, 9):
-            decvalues[i] = -1000
+            decvalues[i] = -1000.0
 
         # Looping through all possible moves
         for i in range(1, 9):
@@ -215,7 +215,7 @@ class ConnectFour:
             # Checking if position is valid
             if (copyGame.Grid.isLegal(i)):
                 copyGame.Grid.update('O', i)
-                decisionvalue = self.bestGuess(copyGame, lookahead, -10, 10)
+                decisionvalue = float(self.nnJudge(self))
                 # print(whoseMove(), " ", i, " ", decisionvalue)
 
                 # If decisionvalue is better than bestvalue,
@@ -334,10 +334,10 @@ class ConnectFour:
     #  Neural Network Judge
     # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     def nnJudge(self, game):
-        network = model.sequential
         ls = game.Grid.gameboard
         ls = OF.strToNum(ls)
-        return network.predict(np.array(ls))
+        pred = model.predict(np.array([ls]))
+        return pred[0]
 
 
     # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -494,7 +494,7 @@ class ConnectFour:
         # self.Grid.makeMove('O', self.bestMoveO(self.diffO))
         # print("Please enter your move: ")
         # self.Grid.makeMove('O', int(input()))
-        move = self.modelMove()
+        move = self.bestMoveO()
         self.Grid.makeMove('O', move)
 
     # Omove
@@ -527,7 +527,7 @@ class ConnectFour:
 # set the lookahead in the range 0..6
 # difficultyX = random.randint(0, 6)
 # difficultyO = random.randint(0, 6)
-for _ in range(100):
+for _ in range(1):
     difficultyO = 4
     difficultyX = 5
 
@@ -553,8 +553,7 @@ for _ in range(100):
         # Find winner and print result.
         # 10 = X win, 0 = draw, -10 = O win
         result = game.judge(game.Grid)
-        game.nnJudge(game)
-        # game.Grid.draw()
+        game.Grid.draw()
 
     if (result == -10):
         print("O wins")
@@ -583,34 +582,34 @@ for _ in range(100):
     # print(outputX)
     # print(outputO)
 
-    '''
-    Switched to Pickle to accommodate for lists in IO
-    JSON was not working as when you try to load from a JSON it wasn't giving a list
-    Pickle is much better suited for this and works quite well
-    '''
-
-    if not os.path.exists("X.pkl"):
-        with open("X.pkl", "wb") as f:
-            pickle.dump(outputX, f)
-            f.close()
-    else:
-        with open('X.pkl', 'r+b') as f:
-            temp = pickle.load(f)
-            temp = temp + outputX
-            f.seek(0)
-            f.truncate()
-            pickle.dump(temp, f)
-            f.close()
-
-    if not os.path.exists("O.pkl"):
-        with open("O.pkl", "wb") as f:
-            pickle.dump(outputO, f)
-            f.close()
-    else:
-        with open('O.pkl', 'r+b') as f:
-            temp = pickle.load(f)
-            temp = temp + outputO
-            f.seek(0)
-            f.truncate()
-            pickle.dump(temp, f)
-            f.close()
+    # '''
+    # Switched to Pickle to accommodate for lists in IO
+    # JSON was not working as when you try to load from a JSON it wasn't giving a list
+    # Pickle is much better suited for this and works quite well
+    # '''
+    #
+    # if not os.path.exists("X.pkl"):
+    #     with open("X.pkl", "wb") as f:
+    #         pickle.dump(outputX, f)
+    #         f.close()
+    # else:
+    #     with open('X.pkl', 'r+b') as f:
+    #         temp = pickle.load(f)
+    #         temp = temp + outputX
+    #         f.seek(0)
+    #         f.truncate()
+    #         pickle.dump(temp, f)
+    #         f.close()
+    #
+    # if not os.path.exists("O.pkl"):
+    #     with open("O.pkl", "wb") as f:
+    #         pickle.dump(outputO, f)
+    #         f.close()
+    # else:
+    #     with open('O.pkl', 'r+b') as f:
+    #         temp = pickle.load(f)
+    #         temp = temp + outputO
+    #         f.seek(0)
+    #         f.truncate()
+    #         pickle.dump(temp, f)
+    #         f.close()
