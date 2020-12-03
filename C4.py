@@ -1,9 +1,34 @@
+import logging
+import os
+
+# | 0 DEBUG | 1 INFO | 2 WARNING | 3 ERROR |
+# This is what it will stop. So 3 will stop all messages
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # FATAL
+logging.getLogger('tensorflow').setLevel(logging.WARNING)  # sets log for other tensorflow things outside std out
+
 import random
 import numpy as np
 import copy
 import pickle
-import os
 import outputFormat as OF
+import tensorflow as tf
+import pickle as p
+from keras import models
+from keras import layers
+from sklearn.model_selection import train_test_split
+from keras.models import model_from_json
+
+# # load json and create model
+# json_file = open('model.json', 'r')
+# loaded_model_json = json_file.read()
+# # json_file.close()
+# loaded_model = model_from_json(loaded_model_json)
+# # load weights into new model
+# loaded_model.load_weights("model.h5")
+# loaded_model.compile()
+model = tf.keras.models.load_model('model.h5')
+print(model.summary())
+print("Loaded model from disk")
 
 
 ##########################################
@@ -277,6 +302,44 @@ class ConnectFour:
 
             return minval
 
+    #Using loaded model instead of training ours
+
+    # def trainNetwork(self):
+    #     with open("O.pkl", "rb") as f:
+    #         tmp = p.load(f)
+    #         data = tmp
+    #         f.close()
+    #     boards = [arr[0] for arr in data]
+    #     boards = np.array([np.array(xi) for xi in boards])
+    #
+    #     labels = np.array([i[1] for i in data])
+    #
+    #     X_train, X_test, y_train, y_test = train_test_split(boards, labels, test_size=0.33, random_state=42)
+    #
+    #     y_test = y_test / 10
+    #     y_train = y_train / 10
+    #     # print(np.shape(data))
+    #     # print((X_train, "\n", X_test))
+    #
+    #     network = models.Sequential()
+    #
+    #     network.add(layers.Dense(1000, activation="relu"))
+    #     network.add(layers.Dense(500, activation="relu"))
+    #     network.add(layers.Dense(1))
+    #
+    #     network.compile(loss="mse", metrics="mse")
+    #     network.fit(X_train, y_train, epochs=5, batch_size=15)
+
+    # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    #  Neural Network Judge
+    # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    def nnJudge(self, game):
+        network = model.sequential
+        ls = game.Grid.gameboard
+        ls = OF.strToNum(ls)
+        return network.predict(np.array(ls))
+
+
     # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     # returns how good the game is from the X standpoint
     #    ongoing game: 0.    X win:  10.    O win: -10
@@ -428,10 +491,31 @@ class ConnectFour:
     # Computer makes move
     # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     def Omove(self):
-        self.Grid.makeMove('O', self.bestMoveO(self.diffO))
+        # self.Grid.makeMove('O', self.bestMoveO(self.diffO))
         # print("Please enter your move: ")
         # self.Grid.makeMove('O', int(input()))
+        move = self.modelMove()
+        self.Grid.makeMove('O', move)
+
     # Omove
+
+    def modelMove(self):
+        best = []
+        # copyGame = copy.deepcopy(self)
+        row = 0
+        for i in range(1, 9):
+            copyGame = copy.deepcopy(self)
+            copyGame.Grid.update('O', i)
+            board = OF.strToNum(copyGame.Grid.gameboard.tolist())
+            board = np.array([np.array(board)])
+            temp = [[] for _ in range(8)]
+            for j in range(len(temp)):
+                temp[j] = board[(j * 8):(j * 8 + 8)]
+            board = np.array(temp)
+            board = board.reshape((8, 8, 1))
+            best.append(model.predict(board))
+
+        return np.argmax(best)
 
 
 ###########################################
@@ -443,90 +527,90 @@ class ConnectFour:
 # set the lookahead in the range 0..6
 # difficultyX = random.randint(0, 6)
 # difficultyO = random.randint(0, 6)
+for _ in range(100):
+    difficultyO = 4
+    difficultyX = 5
 
-difficultyX = 5
-difficultyO = 4
+    # create a ConnectFour game
+    game = ConnectFour(difficultyX, difficultyO)
 
-# create a ConnectFour game
-game = ConnectFour(difficultyX, difficultyO)
+    outputX = []
+    outputO = []
 
-outputX = []
-outputO = []
+    winner = ""
 
-winner = ""
+    # While game is not finished, loop continuously
+    while (game.Grid.movecounter < 64 and game.judge(game.Grid) == 0):
 
-# While game is not finished, loop continuously
-while (game.Grid.movecounter < 64 and game.judge(game.Grid) == 0):
+        # True for X move, false for O move
+        if (game.whoseMove()):
+            game.Xmove()
+            outputX.append([OF.strToNum(game.Grid.gameboard.tolist()), game.Grid.movecounter])
+        else:
+            game.Omove()
+            outputO.append([OF.strToNum(game.Grid.gameboard.tolist()), game.Grid.movecounter])
 
-    # True for X move, false for O move
-    if (game.whoseMove()):
-        game.Xmove()
-        outputX.append([OF.strToNum(game.Grid.gameboard.tolist()), game.Grid.movecounter])
+        # Find winner and print result.
+        # 10 = X win, 0 = draw, -10 = O win
+        result = game.judge(game.Grid)
+        game.nnJudge(game)
+        # game.Grid.draw()
+
+    if (result == -10):
+        print("O wins")
+        winner = "O"
+    elif (result == 0):
+        print("Draw")
+    elif (result == 10):
+        print("X wins")
+        winner = "X"
     else:
-        game.Omove()
-        outputO.append([OF.strToNum(game.Grid.gameboard.tolist()), game.Grid.movecounter])
+        print("Unreachable State - Error")
 
-    # Find winner and print result.
-    # 10 = X win, 0 = draw, -10 = O win
-    result = game.judge(game.Grid)
-    game.Grid.draw()
+    print("Lookahead: X=", difficultyX)
+    print("Lookahead: O=", difficultyO)
 
-if (result == -10):
-    print("O wins")
-    winner = "O"
-elif (result == 0):
-    print("Draw")
-elif (result == 10):
-    print("X wins")
-    winner = "X"
-else:
-    print("Unreachable State - Error")
+    totalTurns = game.Grid.movecounter
 
-print("Lookahead: X=", difficultyX)
-print("Lookahead: O=", difficultyO)
+    outputO = OF.setTurns(outputO, totalTurns)
+    outputX = OF.setTurns(outputX, totalTurns)
 
-totalTurns = game.Grid.movecounter
+    if winner == "O":
+        outputX = OF.changeLoser(outputX)
+    elif winner == "X":
+        outputO = OF.changeLoser(outputO)
 
-outputO = OF.setTurns(outputO, totalTurns)
-outputX = OF.setTurns(outputX, totalTurns)
+    # print(outputX)
+    # print(outputO)
 
-if winner == "O":
-    outputX = OF.changeLoser(outputX)
-elif winner == "X":
-    outputO = OF.changeLoser(outputO)
+    '''
+    Switched to Pickle to accommodate for lists in IO
+    JSON was not working as when you try to load from a JSON it wasn't giving a list
+    Pickle is much better suited for this and works quite well
+    '''
 
-print(outputX)
-print(outputO)
+    if not os.path.exists("X.pkl"):
+        with open("X.pkl", "wb") as f:
+            pickle.dump(outputX, f)
+            f.close()
+    else:
+        with open('X.pkl', 'r+b') as f:
+            temp = pickle.load(f)
+            temp = temp + outputX
+            f.seek(0)
+            f.truncate()
+            pickle.dump(temp, f)
+            f.close()
 
-'''
-Switched to Pickle to accommodate for lists in IO
-JSON was not working as when you try to load from a JSON it wasn't giving a list
-Pickle is much better suited for this and works quite well
-'''
-
-if not os.path.exists("X.pkl"):
-    with open("X.pkl", "wb") as f:
-        pickle.dump(outputX, f)
-        f.close()
-else:
-    with open('X.pkl', 'r+b') as f:
-        temp = pickle.load(f)
-        temp = temp + outputX
-        f.seek(0)
-        f.truncate()
-        pickle.dump(temp, f)
-        f.close()
-
-
-if not os.path.exists("O.pkl"):
-    with open("O.pkl", "wb") as f:
-        pickle.dump(outputO, f)
-        f.close()
-else:
-    with open('O.pkl', 'r+b') as f:
-        temp = pickle.load(f)
-        temp = temp + outputO
-        f.seek(0)
-        f.truncate()
-        pickle.dump(temp, f)
-        f.close()
+    if not os.path.exists("O.pkl"):
+        with open("O.pkl", "wb") as f:
+            pickle.dump(outputO, f)
+            f.close()
+    else:
+        with open('O.pkl', 'r+b') as f:
+            temp = pickle.load(f)
+            temp = temp + outputO
+            f.seek(0)
+            f.truncate()
+            pickle.dump(temp, f)
+            f.close()
